@@ -101,6 +101,9 @@ Each event is sent as a single compact JSON line terminated by `\n` (`Content-Ty
 
 If your Taegis ingest expects a different schema or framing (for example NDJSON), adjust `send_event()` and the event dict in `main()` in `dns_watch.py`.
 
+![http ingest](dns2.png)
+
+
 ## Taegis custom parser
 
 `taegis_parser.txt` is a Taegis custom parser that turns the ingested event into a third-party alert (`thirdpartyalert` schema).
@@ -124,7 +127,9 @@ What it maps:
 
 The parser also sets fixed values for `alertCategory$`, `vendor$`, `provider$`, `logType$` and `sensorType$`. It only matches events containing `"event_type": "dns_record_change"`.
 
-Not verified in a live tenant. Check these when testing:
+![thirdpartyalert event](dns3.png)
+
+Check these when testing:
 
 - `severity$` is assigned the string `HIGH` or `MEDIUM`. The Taegis docs list the enum (`UNKNOWN_SEVERITY` to `CRITICAL`) but don't show how to assign it. If the test rejects the string, send a number from the event instead (3 for `MEDIUM`, 4 for `HIGH`).
 - The timestamp uses `DATETIME` with the Go layout `2006-01-02T15:04:05Z07:00`. Confirm the parsed time is correct.

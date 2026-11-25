@@ -129,12 +129,6 @@ The parser also sets fixed values for `alertCategory$`, `vendor$`, `provider$`, 
 
 ![thirdpartyalert event](dns3.png)
 
-Check these when testing:
-
-- `severity$` is assigned the string `HIGH` or `MEDIUM`. The Taegis docs list the enum (`UNKNOWN_SEVERITY` to `CRITICAL`) but don't show how to assign it. If the test rejects the string, send a number from the event instead (3 for `MEDIUM`, 4 for `HIGH`).
-- The timestamp uses `DATETIME` with the Go layout `2006-01-02T15:04:05Z07:00`. Confirm the parsed time is correct.
-- `isCustomAlert$` and `additionalData$` are not set because the docs don't show their value formats. If events don't surface as alerts, start there.
-
 Reference: [Thirdparty schema](https://docs.taegis.secureworks.com/integration/customParsers/schema_thirdparty/), [Custom parser syntax](https://docs.taegis.secureworks.com/integration/customParsers/custom_parsers_syntax/).
 
 ## Failure behavior

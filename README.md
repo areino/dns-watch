@@ -56,6 +56,8 @@ python dns_watch.py -c config.json --dry-run    # print events, send nothing, le
 python dns_watch.py -c config.json -v           # log the full HTTP request (token redacted) and response
 ```
 
+![command line](dns1.png)
+
 Send errors always include the HTTP status, response body and headers, and say where the token came from (or that it was not found).
 
 ## How it works

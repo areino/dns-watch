@@ -1,0 +1,27 @@
+!SAMPLE={"timestamp": "2026-11-25T16:31:36.105830+00:00", "source": "dns-watch", "event_type": "dns_record_change", "domain": "example.com", "zone": "example.com", "answered_by": "elliott.ns.cloudflare.com (162.159.44.228)", "title": "DNS records changed for example.com", "summary": "example.com: A: +1 -1", "severity": "MEDIUM", "changes": [{"field": "A", "added": ["172.66.147.243"], "removed": ["9.9.9.9"]}], "previous": {"status": "NOERROR"}, "current": {"status": "NOERROR"}}
+!SCHEMA=thirdpartyalert
+!CONFIRMWITH=PATTERN
+!CONFIRMSTRING="event_type"\s*:\s*"dns_record_change"
+
+json = JSON(data)
+
+# Time: Go layout; fractional seconds are accepted on parse even though the layout omits them
+ts = DATETIME(json["$.timestamp"], "2006-01-02T15:04:05Z07:00")
+eventTimeUsec$ = ts
+firstEventTimeUsec$ = ts
+lastEventTimeUsec$ = ts
+
+# Alert content (title / summary / severity are pre-built by dns_watch.py)
+title$ = json["$.title"]
+summary$ = json["$.summary"]
+severity$ = json["$.severity"]
+vendorSeverity$ = json["$.severity"]
+alertCategory$ = "DNS Change"
+
+# Context
+domainName$ = json["$.domain"]
+sourceHostName$ = json["$.answered_by"]
+vendor$ = "dns-watch"
+provider$ = "dns-watch"
+logType$ = "dns_record_change"
+sensorType$ = "dns-watch"

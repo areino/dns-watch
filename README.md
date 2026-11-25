@@ -76,6 +76,9 @@ One JSON object per POST:
   "domain": "example.com",
   "zone": "example.com",
   "answered_by": "elliott.ns.cloudflare.com (162.159.44.228)",
+  "title": "DNS records changed for example.com",
+  "summary": "example.com: A: +1 -1",
+  "severity": "MEDIUM",
   "changes": [
     { "field": "A", "added": ["172.66.147.243"], "removed": ["9.9.9.9"] }
   ],
@@ -86,7 +89,40 @@ One JSON object per POST:
 
 A status change appears as `{"field": "status", "previous": "NOERROR", "current": "NXDOMAIN"}`.
 
+`title`, `summary` and `severity` are built by `dns_watch.py` so the Taegis parser only needs to map fields. Severity is `HIGH` when an NS record or the domain status changes, and `MEDIUM` otherwise (`severity_for()`).
+
 If your Taegis ingest expects a different schema or framing (for example NDJSON), adjust `send_event()` and the event dict in `main()` in `dns_watch.py`.
+
+## Taegis custom parser
+
+`taegis_parser.txt` is a Taegis custom parser that turns the ingested event into a third-party alert (`thirdpartyalert` schema).
+
+To install it:
+
+1. In Taegis XDR, go to the Custom Parsers page and create a new parser.
+2. Paste the contents of `taegis_parser.txt`. The `!SAMPLE=` line holds a sample event for testing.
+3. Run the parser test and check the output fields, then save and enable it.
+
+What it maps:
+
+| Event field | Taegis field |
+|-------------|--------------|
+| `timestamp` | `eventTimeUsec$`, `firstEventTimeUsec$`, `lastEventTimeUsec$` |
+| `title` | `title$` |
+| `summary` | `summary$` |
+| `severity` | `severity$`, `vendorSeverity$` |
+| `domain` | `domainName$` |
+| `answered_by` | `sourceHostName$` |
+
+The parser also sets fixed values for `alertCategory$`, `vendor$`, `provider$`, `logType$` and `sensorType$`. It only matches events containing `"event_type": "dns_record_change"`.
+
+Not verified in a live tenant. Check these when testing:
+
+- `severity$` is assigned the string `HIGH` or `MEDIUM`. The Taegis docs list the enum (`UNKNOWN_SEVERITY` to `CRITICAL`) but don't show how to assign it. If the test rejects the string, send a number from the event instead (3 for `MEDIUM`, 4 for `HIGH`).
+- The timestamp uses `DATETIME` with the Go layout `2006-01-02T15:04:05Z07:00`. Confirm the parsed time is correct.
+- `isCustomAlert$` and `additionalData$` are not set because the docs don't show their value formats. If events don't surface as alerts, start there.
+
+Reference: [Thirdparty schema](https://docs.taegis.secureworks.com/integration/customParsers/schema_thirdparty/), [Custom parser syntax](https://docs.taegis.secureworks.com/integration/customParsers/custom_parsers_syntax/).
 
 ## Failure behavior
 

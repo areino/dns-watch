@@ -1,0 +1,12 @@
+{
+  "domains": ["example.com", "www.example.com"],
+  "record_types": ["A", "AAAA", "CNAME", "MX", "NS", "TXT"],
+  "state_file": "dns_state.json",
+  "timeout": 5,
+  "taegis": {
+    "url": "https://<your-taegis-http-ingest-endpoint>",
+    "token_env": "TAEGIS_TOKEN",
+    "headers": {},
+    "timeout": 15
+  }
+}

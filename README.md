@@ -36,7 +36,8 @@ Copy `config.example.json` to `config.json` and edit:
 | `state_file` | no | Where the baseline is stored. Default: `dns_state.json`. |
 | `timeout` | no | Per-query DNS timeout in seconds. Default: 5. |
 | `taegis.url` | for alerting | HTTP Ingest endpoint. |
-| `taegis.token_env` | no | Environment variable holding the token, sent as `Authorization: Bearer <token>`. Default: `TAEGIS_TOKEN`. |
+| `taegis.token_env` | no | **Name** of the environment variable that holds the key (not the key itself). Sent as `Authorization: Bearer <key>`. Default: `TAEGIS_TOKEN`. |
+| `taegis.token` | no | The key itself, inline. Takes precedence over `token_env`. Convenient for testing; keep the file private. |
 | `taegis.headers` | no | Extra HTTP headers (merged over the defaults). |
 | `taegis.timeout` | no | HTTP timeout in seconds. Default: 15. |
 
@@ -52,7 +53,10 @@ $env:TAEGIS_TOKEN = "..."
 python dns_watch.py -c config.json              # baseline on first run, compare afterwards
 python dns_watch.py -c config.json --first-run  # rebuild the baseline, send no events
 python dns_watch.py -c config.json --dry-run    # print events, send nothing, leave state untouched
+python dns_watch.py -c config.json -v           # log the full HTTP request (token redacted) and response
 ```
+
+Send errors always include the HTTP status, response body and headers, and say where the token came from (or that it was not found).
 
 ## How it works
 
@@ -88,6 +92,8 @@ One JSON object per POST:
 ```
 
 A status change appears as `{"field": "status", "previous": "NOERROR", "current": "NXDOMAIN"}`.
+
+Each event is sent as a single compact JSON line terminated by `\n` (`Content-Type: application/json`). Taegis HTTP Ingest delimits records by line feed, so an unterminated record may not be processed.
 
 `title`, `summary` and `severity` are built by `dns_watch.py` so the Taegis parser only needs to map fields. Severity is `HIGH` when an NS record or the domain status changes, and `MEDIUM` otherwise (`severity_for()`).
 
